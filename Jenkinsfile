@@ -6,7 +6,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 checkout scm
-                echo 'Source code fetched from GitHub'
+                echo 'Code fetched from GitHub'
             }
         }
 
@@ -32,7 +32,7 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 bat 'docker ps --filter name=devops-demo'
-                echo 'Docker deployment completed'
+                echo 'Deployment completed'
             }
         }
     }
@@ -42,16 +42,11 @@ pipeline {
             emailext(
                 to: 'rishithaseethana@gmail.com',
                 subject: "Jenkins ${currentBuild.currentResult}: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """Hello,
-
-Jenkins pipeline execution has finished.
-
-Project: ${env.JOB_NAME}
+                body: """Project: ${env.JOB_NAME}
 Build Number: ${env.BUILD_NUMBER}
 Build Status: ${currentBuild.currentResult}
 
-Please check the Jenkins Console Output for details.
-"""
+Please check Jenkins Console Output for details."""
             )
         }
     }
