@@ -1,4 +1,3 @@
-```groovy
 pipeline {
     agent any
 
@@ -35,7 +34,7 @@ pipeline {
         }
 
         failure {
-            echo 'GitHub connectivity diagnostic failed. Check the Console Output.'
+            echo 'GitHub connectivity diagnostic failed. Check Console Output.'
         }
 
         always {
@@ -44,4 +43,3 @@ pipeline {
         }
     }
 }
-```
