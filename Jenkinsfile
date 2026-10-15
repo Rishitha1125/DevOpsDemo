@@ -1,52 +1,47 @@
-
-
+```groovy
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+    }
+
     stages {
-        stage('Build Docker Image') {
+        stage('Diagnose GitHub Connection') {
             steps {
-                bat 'docker build -t devops-demo:latest .'
-            }
-        }
+                echo '===== Windows User ====='
+                bat 'whoami'
 
-        stage('Deploy Container') {
-            steps {
-                script {
-                    bat(
-                        returnStatus: true,
-                        script: 'docker rm -f devops-demo'
-                    )
-                }
+                echo '===== Network Configuration ====='
+                bat 'ipconfig /all'
 
-                bat 'docker run -d --name devops-demo -p 8081:8000 devops-demo:latest'
-            }
-        }
+                echo '===== GitHub DNS Test ====='
+                bat 'nslookup github.com'
 
-        stage('Verify Deployment') {
-            steps {
-                bat 'docker ps --filter name=devops-demo'
-                echo 'Docker deployment completed'
+                echo '===== Git Version ====='
+                bat 'git --version'
+
+                echo '===== GitHub Repository Connection Test ====='
+                bat 'git ls-remote https://github.com/Rishitha1125/DevOpsDemo.git'
+
+                echo 'GitHub connectivity test completed.'
             }
         }
     }
 
     post {
+        success {
+            echo 'GitHub connectivity diagnostic completed successfully.'
+        }
+
+        failure {
+            echo 'GitHub connectivity diagnostic failed. Check the Console Output.'
+        }
+
         always {
-            emailext(
-                to: 'rishithaseethana@gmail.com',
-                subject: "Jenkins ${currentBuild.currentResult}: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """Hello,
-
-Pipeline execution has finished.
-
-Project: ${env.JOB_NAME}
-Build Number: ${env.BUILD_NUMBER}
-Build Status: ${currentBuild.currentResult}
-
-Please check Jenkins Console Output for details.
-"""
-            )
+            echo "Build Status: ${currentBuild.currentResult}"
+            echo "Build Number: ${env.BUILD_NUMBER}"
         }
     }
 }
+```
