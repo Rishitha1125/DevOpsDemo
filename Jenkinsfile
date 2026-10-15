@@ -6,40 +6,66 @@ pipeline {
     }
 
     stages {
-        stage('Diagnose GitHub Connection') {
+        stage('Checkout Code') {
             steps {
-                echo '===== Windows User ====='
-                bat 'whoami'
+                checkout scm
+                echo 'Source code fetched from GitHub'
+            }
+        }
 
-                echo '===== Network Configuration ====='
-                bat 'ipconfig /all'
+        stage('Build Docker Image') {
+            steps {
+                bat 'docker --version'
+                bat 'docker build -t devops-demo:latest .'
+            }
+        }
 
-                echo '===== GitHub DNS Test ====='
-                bat 'nslookup github.com'
+        stage('Deploy Container') {
+            steps {
+                script {
+                    bat(
+                        returnStatus: true,
+                        script: 'docker rm -f devops-demo'
+                    )
+                }
 
-                echo '===== Git Version ====='
-                bat 'git --version'
+                bat 'docker run -d --name devops-demo -p 8081:8000 devops-demo:latest'
+            }
+        }
 
-                echo '===== GitHub Repository Connection Test ====='
-                bat 'git ls-remote https://github.com/Rishitha1125/DevOpsDemo.git'
-
-                echo 'GitHub connectivity test completed.'
+        stage('Verify Deployment') {
+            steps {
+                bat 'docker ps --filter name=devops-demo'
+                bat 'curl.exe --fail http://localhost:8081/'
+                echo 'Website deployment verified'
             }
         }
     }
 
     post {
         success {
-            echo 'GitHub connectivity diagnostic completed successfully.'
+            echo 'Pipeline completed successfully.'
         }
 
         failure {
-            echo 'GitHub connectivity diagnostic failed. Check Console Output.'
+            echo 'Pipeline failed. Check the Console Output.'
         }
 
         always {
-            echo "Build Status: ${currentBuild.currentResult}"
-            echo "Build Number: ${env.BUILD_NUMBER}"
+            emailext(
+                to: 'rishithaseethana@gmail.com',
+                subject: "Jenkins ${currentBuild.currentResult}: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """Hello,
+
+Jenkins pipeline execution has finished.
+
+Project: ${env.JOB_NAME}
+Build Number: ${env.BUILD_NUMBER}
+Build Status: ${currentBuild.currentResult}
+
+Check Jenkins Console Output for details.
+"""
+            )
         }
     }
 }
