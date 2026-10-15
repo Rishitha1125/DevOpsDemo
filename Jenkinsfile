@@ -69,16 +69,20 @@ pipeline {
         }
     }
 
-    post {
-        success {
-            echo 'All pipeline stages completed successfully.'
-        }
+  
+post {
+    success {
+        echo 'All pipeline stages completed successfully.'
+    }
 
-        failure {
-            echo 'Pipeline failed. Check Console Output for details.'
-        }
+    failure {
+        echo 'Pipeline failed. Check Console Output for details.'
+    }
 
-        always {
+    always {
+        script {
+            echo "Build result: ${currentBuild.currentResult}"
+
             emailext(
                 to: 'rishithaseethana@gmail.com',
                 subject: "Jenkins ${currentBuild.currentResult}: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
@@ -91,8 +95,8 @@ Project: ${env.JOB_NAME}
 Build Number: ${env.BUILD_NUMBER}
 Build Status: ${currentBuild.currentResult}
 
-Check Jenkins Console Output for details.
 Website URL: http://localhost:8081/
+Build URL: ${env.BUILD_URL}
 """
             )
         }
